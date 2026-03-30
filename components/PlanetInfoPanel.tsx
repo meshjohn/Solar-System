@@ -1,6 +1,7 @@
 "use client";
 import { useSolarStore } from "@/store/useSolarStore";
 import { useEffect, useState, useRef } from "react";
+import { PlanetData } from "@/data/planets";
 
 export default function PlanetInfoPanel() {
   const { selectedPlanet, panelOpen, setPanelOpen, setCameraMode, setSelectedPlanet } = useSolarStore();
@@ -77,9 +78,9 @@ export default function PlanetInfoPanel() {
 function PanelContent({
   p, stats, activeTab, setActiveTab, scrollRef, handleClose, isMobile
 }: {
-  p: any; stats: any[]; activeTab: "info" | "minds";
+  p: PlanetData; stats: { label: string; value: string; unit: string; icon: string }[]; activeTab: "info" | "minds";
   setActiveTab: (t: "info" | "minds") => void;
-  scrollRef: React.RefObject<HTMLDivElement>;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
   handleClose: () => void;
   isMobile: boolean;
 }) {
@@ -291,7 +292,7 @@ function PanelContent({
             >
               Pioneers who shaped <span style={{ color: p.color }}>{p.field}</span>.
             </p>
-            {p.minds.map((m: any, i: number) => (
+            {p.minds.map((m, i: number) => (
               <div
                 key={m.name}
                 className="group flex items-center gap-3 rounded-xl relative overflow-hidden transition-all duration-300"

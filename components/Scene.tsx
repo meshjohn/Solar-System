@@ -16,8 +16,6 @@ import {
 } from "@react-three/postprocessing";
 
 /* ── Zoom constants (kept in sync with CameraController) ────────── */
-const SOLAR_R_MIN = 40;
-const SOLAR_R_MAX = 700;
 const SOLAR_R_OVERVIEW = 480; // wide enough to see Neptune
 
 export default function Scene() {
