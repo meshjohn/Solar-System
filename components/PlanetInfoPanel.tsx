@@ -80,7 +80,7 @@ function PanelContent({
 }: {
   p: PlanetData; stats: { label: string; value: string; unit: string; icon: string }[]; activeTab: "info" | "minds";
   setActiveTab: (t: "info" | "minds") => void;
-  scrollRef: React.RefObject<HTMLDivElement | null>;
+  scrollRef: React.RefObject<HTMLDivElement>;
   handleClose: () => void;
   isMobile: boolean;
 }) {
