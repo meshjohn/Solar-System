@@ -130,14 +130,6 @@ export default function Scene() {
       <ambientLight intensity={0.01} color="#040614" />
       <hemisphereLight intensity={0.03} color="#060820" groundColor="#000000" />
 
-      <CameraController
-        travelTarget={travelTarget}
-        onTravelComplete={() => {}}
-        onReturnComplete={handleReturnComplete}
-        returning={returning}
-        getPlanetPos={getPlanetPos}
-      />
-
       <Stars count={4500} />
       <Sun />
 
@@ -149,6 +141,14 @@ export default function Scene() {
           onPositionUpdate={handlePositionUpdate}
         />
       ))}
+
+      <CameraController
+        travelTarget={travelTarget}
+        onTravelComplete={() => {}}
+        onReturnComplete={handleReturnComplete}
+        returning={returning}
+        getPlanetPos={getPlanetPos}
+      />
 
       <EffectComposer multisampling={0}>
         <Bloom
