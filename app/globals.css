@@ -1,0 +1,188 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  /* Prevent text selection during 3D interaction */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Prevent pull-to-refresh / overscroll on mobile */
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+/* Allow text selection within info panels */
+.panel-text {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+/* Hide scrollbar on horizontal scroll (planet selector) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+canvas {
+  display: block;
+  touch-action: none;
+}
+
+/* ── Keyframe animations ────────────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes orbitRing {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes pulseSun {
+  0%,
+  100% {
+    box-shadow:
+      0 0 40px 14px rgba(255, 140, 20, 0.5),
+      0 0 80px 30px rgba(255, 80, 0, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 0 55px 20px rgba(255, 160, 40, 0.65),
+      0 0 110px 45px rgba(255, 100, 0, 0.25);
+  }
+}
+
+/* ── Utility classes ────────────────────────────────────────────── */
+.animate-fade-slide-up {
+  animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-fade-slide-in {
+  animation: fadeSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-fade-slide-down {
+  animation: fadeSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+.animate-pulse-sun {
+  animation: pulseSun 4s ease-in-out infinite;
+}
+
+/* ── xs breakpoint (for very small phones) ──────────────────────── */
+@media (min-width: 400px) {
+  .xs\:hidden {
+    display: none;
+  }
+  .xs\:block {
+    display: block;
+  }
+  .xs\:inline {
+    display: inline;
+  }
+  .xs\:flex {
+    display: flex;
+  }
+}
+
+/* ── Safe area padding for notched phones ───────────────────────── */
+@supports (padding: max(0px)) {
+  .safe-bottom {
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+  .safe-top {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+}
+
+/* ── Touch targets: ensure buttons are large enough ─────────────── */
+@media (max-width: 640px) {
+  button {
+    min-height: 36px;
+    min-width: 36px;
+  }
+}
