@@ -120,12 +120,27 @@ export default function Planet({
     onPositionUpdate(data.name, wpRef.current);
   });
 
-  const handleClick = useCallback(
-    (e: ThreeEvent<MouseEvent>) => {
-      e.stopPropagation();
-      if (cameraMode === "traveling") return;
-      meshRef.current?.getWorldPosition(wpRef.current);
-      onClickPlanet(data, wpRef.current.clone());
+  const pointerDownState = useRef({ time: 0, x: 0, y: 0 });
+
+  const handlePointerDown = useCallback((e: ThreeEvent<PointerEvent>) => {
+    pointerDownState.current = { time: performance.now(), x: e.clientX, y: e.clientY };
+  }, []);
+
+  const handlePointerUp = useCallback(
+    (e: ThreeEvent<PointerEvent>) => {
+      const { time, x, y } = pointerDownState.current;
+      const dt = performance.now() - time;
+      const dx = e.clientX - x;
+      const dy = e.clientY - y;
+      const distSq = dx * dx + dy * dy;
+
+      // Allow clicks up to 350ms with up to ~15px of finger rolling (225 sq)
+      if (dt < 350 && distSq < 225) {
+        e.stopPropagation();
+        if (cameraMode === "traveling") return;
+        meshRef.current?.getWorldPosition(wpRef.current);
+        onClickPlanet(data, wpRef.current.clone());
+      }
     },
     [data, onClickPlanet, cameraMode],
   );
@@ -169,7 +184,8 @@ export default function Planet({
           ref={meshRef}
           scale={[data.size, data.size, data.size]}
           rotation={[data.tilt, 0, 0]}
-          onClick={handleClick}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
           onPointerEnter={() => {
             if (cameraMode === "solar") {
               setHoveredPlanet(data);
