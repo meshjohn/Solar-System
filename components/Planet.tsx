@@ -1,11 +1,15 @@
 "use client";
 import { useRef, useMemo, useCallback } from "react";
 import { useFrame, ThreeEvent } from "@react-three/fiber";
+import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import {
-  planetVertexShader, planetFragmentShader,
-  atmosphereVertexShader, atmosphereFragmentShader,
-  ringVertexShader, ringFragmentShader,
+  planetVertexShader,
+  planetFragmentShader,
+  atmosphereVertexShader,
+  atmosphereFragmentShader,
+  ringVertexShader,
+  ringFragmentShader,
 } from "@/shaders";
 import { PlanetData } from "@/data/planets";
 import { useSolarStore } from "@/store/useSolarStore";
@@ -16,58 +20,20 @@ interface PlanetProps {
   onPositionUpdate: (name: string, pos: THREE.Vector3) => void;
 }
 
-function SaturnRings() {
-  const matRef = useRef<THREE.ShaderMaterial>(null!);
-  useFrame(({ clock }) => {
-    if (matRef.current) matRef.current.uniforms.uTime.value = clock.getElapsedTime();
-  });
-
-  const { geo, inner, outer } = useMemo(() => {
-    const innerR = 1.42, outerR = 2.75, segs = 512;
-    const verts: number[] = [], uvs: number[] = [], idx: number[] = [];
-    for (let i = 0; i <= segs; i++) {
-      const a = (i / segs) * Math.PI * 2;
-      const c = Math.cos(a), s = Math.sin(a);
-      verts.push(c * innerR, 0, s * innerR, c * outerR, 0, s * outerR);
-      uvs.push(i / segs, 0, i / segs, 1);
-    }
-    for (let i = 0; i < segs; i++) {
-      const b = i * 2;
-      idx.push(b, b + 1, b + 2, b + 1, b + 3, b + 2);
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(verts), 3));
-    g.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(uvs), 2));
-    g.setIndex(idx);
-    return { geo: g, inner: innerR, outer: outerR };
-  }, []);
-
-  return (
-    <mesh geometry={geo} rotation={[0.12, 0, 0]}>
-      <shaderMaterial
-        ref={matRef}
-        vertexShader={ringVertexShader}
-        fragmentShader={ringFragmentShader}
-        uniforms={{
-          uRingColor: { value: new THREE.Vector3(0.82, 0.72, 0.44) },
-          uInnerR: { value: inner },
-          uOuterR: { value: outer },
-          uTime: { value: 0 },
-        }}
-        transparent side={THREE.DoubleSide} depthWrite={false}
-      />
-    </mesh>
-  );
-}
-
-function ThinRings({ color }: { color: string }) {
+function SaturnCircles({ color }: { color: string }) {
   const c = new THREE.Color(color);
   return (
     <>
-      {[1.75, 2.05, 2.38].map((r, i) => (
+      {[1.4, 1.6, 1.85, 2.1, 2.4, 2.75].map((r, i) => (
         <mesh key={i} rotation={[Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[r, r + 0.045, 128]} />
-          <meshBasicMaterial color={c} transparent opacity={0.18 - i * 0.03} side={THREE.DoubleSide} depthWrite={false} />
+          <ringGeometry args={[r, r + 0.04, 128]} />
+          <meshBasicMaterial
+            color={c}
+            transparent
+            opacity={0.35 - i * 0.04}
+            side={THREE.DoubleSide}
+            depthWrite={false}
+          />
         </mesh>
       ))}
     </>
@@ -99,32 +65,44 @@ function Moon({ parentSize, index }: { parentSize: number; index: number }) {
   );
 }
 
-export default function Planet({ data, onClickPlanet, onPositionUpdate }: PlanetProps) {
-  const groupRef  = useRef<THREE.Group>(null!);
-  const meshRef   = useRef<THREE.Mesh>(null!);
-  const surfRef   = useRef<THREE.ShaderMaterial>(null!);
-  const atmoRef   = useRef<THREE.ShaderMaterial>(null!);
-  const angleRef  = useRef(Math.random() * Math.PI * 2);
-  const wpRef     = useRef(new THREE.Vector3());
+export default function Planet({
+  data,
+  onClickPlanet,
+  onPositionUpdate,
+}: PlanetProps) {
+  const groupRef = useRef<THREE.Group>(null!);
+  const meshRef = useRef<THREE.Mesh>(null!);
+  const surfRef = useRef<THREE.ShaderMaterial>(null!);
+  const atmoRef = useRef<THREE.ShaderMaterial>(null!);
+  const angleRef = useRef(Math.random() * Math.PI * 2);
+  const wpRef = useRef(new THREE.Vector3());
 
-  const { speedMultiplier, setHoveredPlanet, cameraMode } = useSolarStore();
+  const { speedMultiplier, hoveredPlanet, setHoveredPlanet, cameraMode } =
+    useSolarStore();
 
-  const uniforms = useMemo(() => ({
-    uTime:      { value: 0 },
-    uType:      { value: data.shaderType },
-    uCol1:      { value: new THREE.Vector3(...data.col1) },
-    uCol2:      { value: new THREE.Vector3(...data.col2) },
-    uCol3:      { value: new THREE.Vector3(...data.col3) },
-    uRoughness: { value: data.roughness },
-    uMetalness: { value: data.metalness },
-  }), [data]);
+  const uniforms = useMemo(
+    () => ({
+      uTime: { value: 0 },
+      uType: { value: data.shaderType },
+      uCol1: { value: new THREE.Vector3(...data.col1) },
+      uCol2: { value: new THREE.Vector3(...data.col2) },
+      uCol3: { value: new THREE.Vector3(...data.col3) },
+      uRoughness: { value: data.roughness },
+      uMetalness: { value: data.metalness },
+    }),
+    [data],
+  );
 
-  const atmoUniforms = useMemo(() =>
-    data.atmosphereColor ? {
-      uAtmoColor:  { value: new THREE.Vector3(...data.atmosphereColor) },
-      uThickness:  { value: data.atmosphereThickness ?? 1.0 },
-    } : null,
-  [data]);
+  const atmoUniforms = useMemo(
+    () =>
+      data.atmosphereColor
+        ? {
+            uAtmoColor: { value: new THREE.Vector3(...data.atmosphereColor) },
+            uThickness: { value: data.atmosphereThickness ?? 1.0 },
+          }
+        : null,
+    [data],
+  );
 
   useFrame(({ clock }, delta) => {
     const t = clock.getElapsedTime();
@@ -134,8 +112,9 @@ export default function Planet({ data, onClickPlanet, onPositionUpdate }: Planet
     const z = Math.sin(a) * data.orbitRadius;
 
     if (groupRef.current) groupRef.current.position.set(x, 0, z);
-    if (meshRef.current)  meshRef.current.rotation.y = t * (0.12 + data.shaderType * 0.025);
-    if (surfRef.current)  surfRef.current.uniforms.uTime.value = t;
+    if (meshRef.current)
+      meshRef.current.rotation.y = t * (0.12 + data.shaderType * 0.025);
+    if (surfRef.current) surfRef.current.uniforms.uTime.value = t;
     // atmosphere mat has no animated uniforms beyond color set at init
 
     // Broadcast position for camera tracking
@@ -150,28 +129,38 @@ export default function Planet({ data, onClickPlanet, onPositionUpdate }: Planet
       meshRef.current?.getWorldPosition(wpRef.current);
       onClickPlanet(data, wpRef.current.clone());
     },
-    [data, onClickPlanet, cameraMode]
+    [data, onClickPlanet, cameraMode],
   );
 
   return (
     <>
       {/* Orbit ring – unified color for all planets */}
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[data.orbitRadius - 0.08, data.orbitRadius + 0.08, 256]} />
-        <meshBasicMaterial color="#8899cc" transparent opacity={0.08} side={THREE.DoubleSide} depthWrite={false} />
+        <ringGeometry
+          args={[data.orbitRadius - 0.08, data.orbitRadius + 0.08, 256]}
+        />
+        <meshBasicMaterial
+          color="#8899cc"
+          transparent
+          opacity={0.08}
+          side={THREE.DoubleSide}
+          depthWrite={false}
+        />
       </mesh>
 
       <group ref={groupRef}>
         {/* Atmosphere – slightly larger for halo effect */}
         {atmoUniforms && (
-          <mesh scale={[data.size * 1.10, data.size * 1.10, data.size * 1.10]}>
+          <mesh scale={[data.size * 1.1, data.size * 1.1, data.size * 1.1]}>
             <sphereGeometry args={[1, 64, 64]} />
             <shaderMaterial
               ref={atmoRef}
               vertexShader={atmosphereVertexShader}
               fragmentShader={atmosphereFragmentShader}
               uniforms={atmoUniforms}
-              transparent side={THREE.BackSide} depthWrite={false}
+              transparent
+              side={THREE.BackSide}
+              depthWrite={false}
               blending={THREE.AdditiveBlending}
             />
           </mesh>
@@ -183,13 +172,13 @@ export default function Planet({ data, onClickPlanet, onPositionUpdate }: Planet
           scale={[data.size, data.size, data.size]}
           rotation={[data.tilt, 0, 0]}
           onClick={handleClick}
-          onPointerEnter={() => { 
+          onPointerEnter={() => {
             if (cameraMode === "solar") {
               setHoveredPlanet(data);
               document.body.style.cursor = "crosshair";
             }
           }}
-          onPointerLeave={() => { 
+          onPointerLeave={() => {
             if (cameraMode === "solar") {
               setHoveredPlanet(null);
               document.body.style.cursor = "default";
@@ -205,23 +194,44 @@ export default function Planet({ data, onClickPlanet, onPositionUpdate }: Planet
           />
         </mesh>
 
-        {/* Saturn rings */}
-        {data.hasRings && (
-          <group scale={[data.size, data.size, data.size]}>
-            <SaturnRings />
-          </group>
+        {/* Planet Label */}
+        {cameraMode === "solar" && (
+          <Html
+            position={[0, data.size * 1.3 + 1.5, 0]}
+            center
+            zIndexRange={[100, 0]}
+            distanceFactor={140}
+          >
+            <div
+              className="pointer-events-none select-none whitespace-nowrap text-[12px] font-black uppercase tracking-[0.35em] transition-all duration-300"
+              style={{
+                color: "#ffffff",
+                textShadow: `0 0 12px ${data.glowColor}, 0 0 24px ${data.color}, 0 2px 4px rgba(0,0,0,0.9)`,
+              }}
+            >
+              {data.name}
+            </div>
+          </Html>
         )}
 
-        {/* Uranus thin rings */}
-        {data.hasThinRings && (
-          <group scale={[data.size, data.size, data.size]} rotation={[Math.PI / 2 + data.tilt * 0.1, 0, 0]}>
-            <ThinRings color={data.color} />
+        {/* Saturn rings */}
+        {data.hasRings && (
+          <group
+            scale={[data.size, data.size, data.size]}
+            rotation={[data.tilt * 0.5, 0, 0]}
+          >
+            <SaturnCircles color={data.glowColor} />
           </group>
         )}
 
         {/* Moons */}
-        {data.hasMoon  && <Moon parentSize={data.size} index={0} />}
-        {data.hasMoons && <><Moon parentSize={data.size} index={0} /><Moon parentSize={data.size} index={1} /></>}
+        {data.hasMoon && <Moon parentSize={data.size} index={0} />}
+        {data.hasMoons && (
+          <>
+            <Moon parentSize={data.size} index={0} />
+            <Moon parentSize={data.size} index={1} />
+          </>
+        )}
       </group>
     </>
   );

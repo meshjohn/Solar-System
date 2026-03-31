@@ -30,6 +30,10 @@ export default function PlanetInfoPanel() {
     { label: "Orbit Speed",  value: `${p.speed.toFixed(2)}`, unit: "×", icon: "⟳" },
     { label: "Planet Size",  value: `${p.size.toFixed(2)}`, unit: "R⊕", icon: "⊕" },
     { label: "Axial Tilt",  value: `${(p.tilt * 57.3).toFixed(1)}`, unit: "°", icon: "∠" },
+    { label: "Surface Rough", value: `${(p.roughness * 100).toFixed(0)}`, unit: "%", icon: "≈" },
+    { label: "Metallic core", value: `${(p.metalness * 100).toFixed(0)}`, unit: "%", icon: "⛋" },
+    { label: "Atmosphere", value: p.atmosphereThickness ? `${p.atmosphereThickness.toFixed(2)}` : "0", unit: p.atmosphereThickness ? "atm" : "", icon: "☁" },
+    { label: "Satellites", value: p.hasRings ? "Rings" : p.hasMoons ? "Multiple" : p.hasMoon ? "1" : "0", unit: p.hasRings ? "" : "sys", icon: "☽" },
   ];
 
   return (
@@ -193,7 +197,7 @@ function PanelContent({
         {activeTab === "info" && (
           <div className={`${isMobile ? "px-4" : "px-7"} pt-4 pb-8 flex flex-col ${isMobile ? "gap-4" : "gap-6"}`}>
 
-            {/* Description – clamped on mobile so stats are visible without scrolling */}
+            {/* Field Description – clamped on mobile so stats are visible without scrolling */}
             <p
               style={{
                 fontSize: isMobile ? 11.5 : 14,
@@ -210,6 +214,22 @@ function PanelContent({
             >
               {p.desc}
             </p>
+
+            {/* Planet Scientific Description */}
+            <div className="mt-1">
+              <SectionLabel label="Planet Profile" color={p.color} />
+              <p
+                style={{
+                  fontSize: isMobile ? 11.5 : 13.5,
+                  color: "rgba(255,255,255,0.85)",
+                  fontFamily: "'Inter',sans-serif",
+                  lineHeight: 1.65,
+                  marginTop: isMobile ? 8 : 12,
+                }}
+              >
+                {p.planetDesc}
+              </p>
+            </div>
 
             {/* Stats */}
             <div>

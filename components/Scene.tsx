@@ -5,6 +5,7 @@ import { Canvas } from "@react-three/fiber";
 import Stars from "./Stars";
 import Sun from "./Sun";
 import Planet from "./Planet";
+import AsteroidBelt from "./AsteroidBelt";
 import CameraController from "./CameraController";
 import { PLANETS, PlanetData } from "@/data/planets";
 import { useSolarStore } from "@/store/useSolarStore";
@@ -132,6 +133,7 @@ export default function Scene() {
 
       <Stars count={4500} />
       <Sun />
+      <AsteroidBelt count={3500} innerRadius={104} outerRadius={118} />
 
       {PLANETS.map((p) => (
         <Planet

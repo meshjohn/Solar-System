@@ -338,16 +338,23 @@ export default function CameraController({
 
       const ps = pSph.current;
       const pts = pSphTgt.current;
-      ps.theta += (pts.theta - ps.theta) * 0.07;
-      ps.phi += (pts.phi - ps.phi) * 0.07;
-      ps.r += (pts.r - ps.r) * 0.07;
+      
+      // Auto-rotation (applied instantly to both to avoid damping lag jitter on desktop)
+      if (!isDragging.current) {
+        const rot = delta * 0.12;
+        pts.theta += rot;
+        ps.theta += rot;
+      }
+
+      // Use framerate independent damping to smooth user dragging/zooming
+      ps.theta = THREE.MathUtils.damp(ps.theta, pts.theta, 5, delta);
+      ps.phi = THREE.MathUtils.damp(ps.phi, pts.phi, 5, delta);
+      ps.r = THREE.MathUtils.damp(ps.r, pts.r, 5, delta);
 
       // Stable, cached y-offset so it doesn't fluctuate per frame
       const yOffset = isMobile.current ? ps.r * 0.18 : 0;
       const targetLookAt = planetPos.clone();
       targetLookAt.y -= yOffset;
-
-      if (!isDragging.current) pts.theta += delta * 0.12;
 
       const sphi = Math.sin(ps.phi),
         cphi = Math.cos(ps.phi);
@@ -363,13 +370,17 @@ export default function CameraController({
 
       /* SOLAR VIEW */
     } else if (cameraMode === "solar") {
-      if (autoRotate.current) sphTgt.current.theta += delta * 0.05;
+      if (autoRotate.current) {
+        const rot = delta * 0.05;
+        sphTgt.current.theta += rot;
+        sph.current.theta += rot;
+      }
 
       const s = sph.current;
       const ts = sphTgt.current;
-      s.theta += (ts.theta - s.theta) * 0.042;
-      s.phi += (ts.phi - s.phi) * 0.042;
-      s.r += (ts.r - s.r) * 0.042;
+      s.theta = THREE.MathUtils.damp(s.theta, ts.theta, 4, delta);
+      s.phi = THREE.MathUtils.damp(s.phi, ts.phi, 4, delta);
+      s.r = THREE.MathUtils.damp(s.r, ts.r, 4, delta);
 
       const sphi = Math.sin(s.phi),
         cphi = Math.cos(s.phi);

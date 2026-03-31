@@ -397,7 +397,6 @@ void main(){
 `;
 
 export const ringVertexShader = `
-attribute vec2 uv;
 varying vec2 vUv;
 varying float vDist;
 
@@ -422,16 +421,16 @@ float vnoise1(float p){float i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(
 
 void main(){
   float t=(vDist-uInnerR)/(uOuterR-uInnerR);
-  float edge=smoothstep(0.0,0.025,t)*smoothstep(1.0,0.975,t);
-  float dR=smoothstep(0.0,0.06,t)*smoothstep(0.11,0.07,t)*0.15;
-  float cR=smoothstep(0.11,0.15,t)*smoothstep(0.29,0.25,t)*0.45;
-  float mGap=smoothstep(0.02,0.0,abs(t-0.22))*0.9;
-  float bR=smoothstep(0.29,0.33,t)*smoothstep(0.52,0.48,t)*1.0;
-  float cassini=smoothstep(0.035,0.0,abs(t-0.505))*0.95;
-  float aR=smoothstep(0.53,0.57,t)*smoothstep(0.76,0.72,t)*0.75;
-  float encke=smoothstep(0.018,0.0,abs(t-0.695))*0.9;
-  float keeler=smoothstep(0.008,0.0,abs(t-0.735))*0.85;
-  float fR=smoothstep(0.01,0.0,abs(t-0.82))*0.4;
+  float edge=smoothstep(0.0,0.025,t)*(1.0-smoothstep(0.975,1.0,t));
+  float dR=smoothstep(0.0,0.06,t)*(1.0-smoothstep(0.07,0.11,t))*0.15;
+  float cR=smoothstep(0.11,0.15,t)*(1.0-smoothstep(0.25,0.29,t))*0.45;
+  float mGap=(1.0-smoothstep(0.0,0.02,abs(t-0.22)))*0.9;
+  float bR=smoothstep(0.29,0.33,t)*(1.0-smoothstep(0.48,0.52,t))*1.0;
+  float cassini=(1.0-smoothstep(0.0,0.035,abs(t-0.505)))*0.95;
+  float aR=smoothstep(0.53,0.57,t)*(1.0-smoothstep(0.72,0.76,t))*0.75;
+  float encke=(1.0-smoothstep(0.0,0.018,abs(t-0.695)))*0.9;
+  float keeler=(1.0-smoothstep(0.0,0.008,abs(t-0.735)))*0.85;
+  float fR=(1.0-smoothstep(0.0,0.01,abs(t-0.82)))*0.4;
   float ringStr=(dR+cR+bR+aR+fR)*edge;
   ringStr*=(1.0-mGap)*(1.0-cassini)*(1.0-encke)*(1.0-keeler);
   float bands=vnoise1(t*280.0)*0.22+vnoise1(t*140.0)*0.18+vnoise1(t*70.0)*0.12;
