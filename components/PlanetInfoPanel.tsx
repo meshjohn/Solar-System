@@ -2,9 +2,10 @@
 import { useSolarStore } from "@/store/useSolarStore";
 import { useEffect, useState, useRef } from "react";
 import { PlanetData } from "@/data/planets";
+import { getArticleContent } from "@/data/articles";
 
 export default function PlanetInfoPanel() {
-  const { selectedPlanet, panelOpen, setPanelOpen, setCameraMode, setSelectedPlanet } = useSolarStore();
+  const { selectedPlanet, panelOpen, setPanelOpen, setCameraMode, setSelectedPlanet, setActiveArticle } = useSolarStore();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"info" | "minds">("info");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -20,6 +21,16 @@ export default function PlanetInfoPanel() {
     setCameraMode("solar");
     setSelectedPlanet(null);
     window.dispatchEvent(new CustomEvent("return-to-solar"));
+  };
+
+  const handleSelectTag = (tag: string) => {
+    setActiveArticle({
+      topic: tag,
+      planetName: p.name,
+      planetColor: p.color,
+      content: getArticleContent(tag, p)
+    });
+    handleClose();
   };
 
   if (!selectedPlanet || !mounted) return null;
@@ -51,7 +62,7 @@ export default function PlanetInfoPanel() {
           boxShadow: `-24px 0 80px rgba(0,0,0,0.95)`,
         }}
       >
-        <PanelContent p={p} stats={stats} activeTab={activeTab} setActiveTab={setActiveTab} scrollRef={scrollRef} handleClose={handleClose} isMobile={false} />
+        <PanelContent p={p} stats={stats} activeTab={activeTab} setActiveTab={setActiveTab} scrollRef={scrollRef} handleClose={handleClose} handleSelectTag={handleSelectTag} isMobile={false} />
       </div>
 
       {/* ── Mobile: bottom sheet ────────────────────────────────── */}
@@ -73,19 +84,20 @@ export default function PlanetInfoPanel() {
         <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
           <div className="w-9 h-[3px] rounded-full" style={{ background: `${p.color}60` }} />
         </div>
-        <PanelContent p={p} stats={stats} activeTab={activeTab} setActiveTab={setActiveTab} scrollRef={scrollRef} handleClose={handleClose} isMobile={true} />
+        <PanelContent p={p} stats={stats} activeTab={activeTab} setActiveTab={setActiveTab} scrollRef={scrollRef} handleClose={handleClose} handleSelectTag={handleSelectTag} isMobile={true} />
       </div>
     </>
   );
 }
 
 function PanelContent({
-  p, stats, activeTab, setActiveTab, scrollRef, handleClose, isMobile
+  p, stats, activeTab, setActiveTab, scrollRef, handleClose, handleSelectTag, isMobile
 }: {
   p: PlanetData; stats: { label: string; value: string; unit: string; icon: string }[]; activeTab: "info" | "minds";
   setActiveTab: (t: "info" | "minds") => void;
   scrollRef: React.RefObject<HTMLDivElement>;
   handleClose: () => void;
+  handleSelectTag: (tag: string) => void;
   isMobile: boolean;
 }) {
   return (
@@ -283,21 +295,34 @@ function PanelContent({
               <SectionLabel label="Sub-disciplines" color={p.color} />
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {p.tags.map((tag: string) => (
-                  <span
+                  <button
                     key={tag}
+                    onClick={() => handleSelectTag(tag)}
+                    className="transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
                     style={{
                       fontSize: isMobile ? 9.5 : 11,
                       padding: isMobile ? "3px 10px" : "6px 14px",
                       borderRadius: 999,
                       background: `${p.color}12`,
-                      border: `1px solid ${p.color}28`,
-                      color: "rgba(255,255,255,0.75)",
+                      border: `1px solid ${p.color}40`,
+                      color: "rgba(255,255,255,0.85)",
                       fontFamily: "'Inter',sans-serif",
                       fontWeight: 500,
+                      boxShadow: `0 0 10px ${p.color}10`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = `${p.color}25`;
+                      e.currentTarget.style.borderColor = `${p.color}80`;
+                      e.currentTarget.style.boxShadow = `0 0 15px ${p.color}30`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = `${p.color}12`;
+                      e.currentTarget.style.borderColor = `${p.color}40`;
+                      e.currentTarget.style.boxShadow = `0 0 10px ${p.color}10`;
                     }}
                   >
                     {tag}
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>

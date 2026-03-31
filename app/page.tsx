@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import HUD from "@/components/HUD";
 import PlanetInfoPanel from "@/components/PlanetInfoPanel";
 import LoadingScreen from "@/components/LoadingScreen";
+import ArticleScreen from "@/components/ArticleScreen";
 import { useSolarStore } from "@/store/useSolarStore";
 
 const Scene = dynamic(() => import("@/components/Scene"), { ssr: false });
@@ -48,6 +49,7 @@ export default function Home() {
         <>
           <HUD onSelectPlanet={handleSelectPlanet} />
           <PlanetInfoPanel />
+          <ArticleScreen />
         </>
       )}
     </main>
