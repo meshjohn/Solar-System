@@ -8,8 +8,6 @@ import {
   planetFragmentShader,
   atmosphereVertexShader,
   atmosphereFragmentShader,
-  ringVertexShader,
-  ringFragmentShader,
 } from "@/shaders";
 import { PlanetData } from "@/data/planets";
 import { useSolarStore } from "@/store/useSolarStore";
@@ -77,7 +75,7 @@ export default function Planet({
   const angleRef = useRef(Math.random() * Math.PI * 2);
   const wpRef = useRef(new THREE.Vector3());
 
-  const { speedMultiplier, hoveredPlanet, setHoveredPlanet, cameraMode } =
+  const { speedMultiplier, setHoveredPlanet, cameraMode } =
     useSolarStore();
 
   const uniforms = useMemo(
